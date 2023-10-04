@@ -2,25 +2,25 @@
   <img src="SAFELogoBar.png"/>
 </p>
 
-# SAFEPy
-This repository contains the SAFEPy Programmable Query Application for querying the National Transportation Safety Board (NTSB) investigations database.
+# AcciPy
+This repository contains the AcciPy Programmable Query Application for querying the National Transportation Safety Board (NTSB) investigations database.
 This was developed by Gage Broberg, Wyatt McGinnis, Srihari Menon and Prof Nancy Currie-Gregg from the Systems Analysis & Functional Evaluation Laboratory (SAFELab) at Texas A&M University.
 This tool is open-source and free-to-use. Please reference our publication when you do!
 
 ## How it works
-SAFEPy works the same way that querying from the Carol Query web interface does, but is much more robust! When you submit a request to SAFEPy via the query() function, SAFEPy does the following:
+AcciPy works the same way that querying from the Carol Query web interface does, but is much more robust! When you submit a request to AcciPy via the query() function, AcciPy does the following:
 1. Tries to adapt the request to the requirements of the NTSB servers
-2. Based on the query parameters you give it, SAFEPy decides whether the query can be safely downloaded to your machine in one request, or if the query needs to be based to NTSB in smaller chunks.
+2. Based on the query parameters you give it, AcciPy decides whether the query can be safely downloaded to your machine in one request, or if the query needs to be based to NTSB in smaller chunks.
 3. Passes the revised query to NTSB asynchronously through http requests
 4. Places received data from NTSB in a folder called './output' in the current directory
    1. Data chunks from queries that could not be completed in a single request in folders named with query parameters that generated them, so that you can always tell what data you have
 5. After completing all necessary queries, combines all data received into the file './output/aggregated_data.csv'
 
 ## Implementation
-The application is contained in a single python file `SAFEPy.py` and can be added using the standard python `import`. The module itself contains the `CAROLQuery` class, which is used by the application to interact with the CAROL database, along with the standard `query` function, which takes in a set of rules to query CAROL with.. 
+The application is contained in a single python file `AcciPy.py` and can be added using the standard python `import`. The module itself contains the `CAROLQuery` class, which is used by the application to interact with the CAROL database, along with the standard `query` function, which takes in a set of rules to query CAROL with.. 
 
 ## Multiprocessing and performance limitations
-Queries resulting in 3500 accidents or more can take over 60 seconds to return, causing the http request to time out. To avoid this, SAFEPy breaks up your large queries into smaller ones that the NTSB servers can handle without error to ensure that you aren't left hanging with a 504 server timeout!
+Queries resulting in 3500 accidents or more can take over 60 seconds to return, causing the http request to time out. To avoid this, AcciPy breaks up your large queries into smaller ones that the NTSB servers can handle without error to ensure that you aren't left hanging with a 504 server timeout!
 
 The application leverages multiprocessing to take advantage of the user's hardware. Because of this, performance is dependent on the number of CPUs on the user's machine. However, it is important to note that the speed of the application is limited by the speed and concurrency level of the NTSB servers. For large queries (yielding over 150000 accidents), please allow up to 1 hour for all data to be transferred. Queries yielding under 3500 datapoints will be completed in under 60 seconds. In general, completion time for queries is proportional to the number of resulting accident datapoints.
 
@@ -28,7 +28,7 @@ The application leverages multiprocessing to take advantage of the user's hardwa
 Below is a small script demonstrating different queries that can be processed using the `query` function. For a full list of available queries, take a look at the [query_options](query_options.md) file.
 
 ```
-import SAFEPy
+import AcciPy
 
 # Different types of queries
 q1 = ("engine power", "Narrative", "Factual", "contains")
@@ -38,15 +38,15 @@ q4 = ("fire",)
 
 # A query can take any number of rules, as long as it is input as a string or tuple. 
 # These tuples can be in any order, the query function will sort and structure it. 
-SAFEPy.query(q1)
-SAFEPy.query(q3, q4)
-SAFEPy.query(q2, q1, q3)
+AcciPy.query(q1)
+AcciPy.query(q3, q4)
+AcciPy.query(q2, q1, q3)
 ```
-## SAFEPy Library
-The SAFEPy library contains the `CAROLQuery` class, the `query` function, and other helper functions used to sort input parameters into their respective fields.
+## AcciPy Library
+The AcciPy library contains the `CAROLQuery` class, the `query` function, and other helper functions used to sort input parameters into their respective fields.
 
 ### query()
-The `query()` function is the main workhorse of the SAFEPy library. It takes an arbritrary number of different arguments and converts them into query rules, which it then uses to create a CAROLQuery object to probe the CAROL database. A single argument is formatted as either a string or a tuple of strings, which are sorted into rules using helper functions. For query fields that are missing from an argument, the application uses the existing elements along with a dictionary of known values to fill in the missing values. If the program cannot decide which fields fit the existing arguments, it raises an exception and halts the program. These arguments can contain key words and dates. For a full list of available queries, take a look at the [query_options](query_options.md) file.
+The `query()` function is the main workhorse of the AcciPy library. It takes an arbritrary number of different arguments and converts them into query rules, which it then uses to create a CAROLQuery object to probe the CAROL database. A single argument is formatted as either a string or a tuple of strings, which are sorted into rules using helper functions. For query fields that are missing from an argument, the application uses the existing elements along with a dictionary of known values to fill in the missing values. If the program cannot decide which fields fit the existing arguments, it raises an exception and halts the program. These arguments can contain key words and dates. For a full list of available queries, take a look at the [query_options](query_options.md) file.
 
 ### Date queries
 Date queries can be submitted with just the date. This will search the database for records with a date `on or after` the entered date. Examples of some valid and invalid singular date queries are shown below:
@@ -69,7 +69,7 @@ q = datetime.today()
 ```
 
 ### 1 element queries
-All 1 element queries will be considered valid. SAFEPy will first attempt to parse the query string as a date (e.g. as shown above). If unable to parse as a date, SAFEPy will search the Factual Narrative for the information. Examples of non-date 1 element queries are shown below:
+All 1 element queries will be considered valid. AcciPy will first attempt to parse the query string as a date (e.g. as shown above). If unable to parse as a date, AcciPy will search the Factual Narrative for the information. Examples of non-date 1 element queries are shown below:
 ```
 q = "engine power"
 q = ("fire",)
@@ -83,14 +83,14 @@ q1_2 = ("engine loss", "08/29/2005")
 ```
 
 ### 3 element queries
-Each element in 3 element queries will be checked to see if it matches one of the valid inputs, and SAFEPy will attempt to sort it into a rule if possible. The following queries are examples of valid 3 element queries:
+Each element in 3 element queries will be checked to see if it matches one of the valid inputs, and AcciPy will attempt to sort it into a rule if possible. The following queries are examples of valid 3 element queries:
 ```
 q = ("Factual narrative", "does not contain", "fuel exhaustion")
 q = ("contains", "student", "analysis narrative")
 ```
 
 ### 4 element queries (___recommended___)
-4 element queries provide the most robust querying in SAFEPy and are the recommended way to query. Elements can be placed into the query object in any order, and SAFEPy will sort the elements into the proper category for you. A list of all valid 4 element queries can be found in the [query_options](query_options.md) file.
+4 element queries provide the most robust querying in AcciPy and are the recommended way to query. Elements can be placed into the query object in any order, and AcciPy will sort the elements into the proper category for you. A list of all valid 4 element queries can be found in the [query_options](query_options.md) file.
 ```
 q = ("03/31/1990", "EventDate", "is after", "Event")
 q = ("false", "AmateurBuilt", "is", "Aircraft")
@@ -116,7 +116,7 @@ query(q1, q2, q3, q4, q5)
 ```
 
 ### Combining queries with `And` and `Or` and the `require_all` key word argument
-By default in SAFEPy, queries like the above examples will be combined with `and` logic. This means that the query
+By default in AcciPy, queries like the above examples will be combined with `and` logic. This means that the query
 ```
 q1 = "engine loss"
 q2 = ("12/10/2010", "EventDate", "is before", "Event")
@@ -130,10 +130,10 @@ query(q1, q2, require_all=False)
 ```
 
 ### Downloading data and the `download` key word argument
-By default in SAFEPy, queried data is not downloaded. However, you can choose to download data on a query-by-query basis by setting the download key word argument to True. This would look like the following:
+By default in AcciPy, queried data is not downloaded. However, you can choose to download data on a query-by-query basis by setting the download key word argument to True. This would look like the following:
 ```
 q1 = "engine loss"
 q2 = ("12/10/2010", "EventDate", "is before", "Event")
 query(q1, q2, download=True)
 ```
-Segments of the requested data will be downloaded to ./output/['{query info here}'] until SAFEPy has finished downloading all data. Then, all data will be collected in the file ./output/aggregated_data.csv
+Segments of the requested data will be downloaded to ./output/['{query info here}'] until AcciPy has finished downloading all data. Then, all data will be collected in the file ./output/aggregated_data.csv
