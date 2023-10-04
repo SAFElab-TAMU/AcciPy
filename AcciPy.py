@@ -435,7 +435,7 @@ def query_decide(value: str):
     # Checks for full sentence
     if long_search(value):
         while True:
-            user_input = input(f"Your input was: {value}\nFull sentences input to SAFEPy will search for the string in the Factual Narrative. Continue? (yes/no): ")
+            user_input = input(f"Your input was: {value}\nFull sentences input to AcciPy will search for the string in the Factual Narrative. Continue? (yes/no): ")
             normalized_input = user_input.lower().strip()
 
             # Check if user_input is "yes" (case-insensitive)
